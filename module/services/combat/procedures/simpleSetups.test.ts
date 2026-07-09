@@ -97,6 +97,10 @@ describe("buildAttributeSetup", () => {
         const a = actor([], { strength: { value: 3 } });
         expect(buildAttributeSetup(a, "strength").rollState.dice).toBe(3);
     });
+    it("dice uses value plus mod when no total is available", () => {
+        const a = actor([], { strength: { value: 3, mod: 2 } });
+        expect(buildAttributeSetup(a, "strength").rollState.dice).toBe(5);
+    });
     it("TN always 4", () => {
         expect(buildAttributeSetup(actor([]), "reaction").rollState.targetNumber).toBe(4);
     });

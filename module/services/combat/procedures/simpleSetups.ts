@@ -86,7 +86,16 @@ type ActorWithItems = {
     items: { get?: (id: string) => SkillItem | undefined; contents?: SkillItem[] };
 };
 
-type AttributeMap = Record<string, { value?: number; total?: number }>;
+type AttributeMap = Record<string, { value?: number; total?: number; mod?: number }>;
+
+function getAttributeDice(actor: ActorWithItems, attributeKey: string): number {
+    const attrs = (actor.system as { attributes?: AttributeMap }).attributes ?? {};
+    const attr = attrs[attributeKey];
+    if (typeof attr?.total === "number") return attr.total;
+    const value = Number(attr?.value ?? 0);
+    const mod = Number(attr?.mod ?? 0);
+    return value + mod;
+}
 
 export function buildSkillSetup(
     actor: ActorWithItems,
@@ -154,9 +163,7 @@ export function buildAttributeSetup(
     attributeKey: string,
     title?: string,
 ): ProcedureSetup {
-    const attrs = (actor.system as { attributes?: AttributeMap }).attributes ?? {};
-    const attr = attrs[attributeKey];
-    const dice = attr?.total ?? attr?.value ?? 0;
+    const dice = getAttributeDice(actor, attributeKey);
 
     const mods = scanTnModifiers(actor, "attribute", attributeKey);
     const rollState: RollState = { dice, poolDice: 0, karmaDice: 0, targetNumber: 4, modifiers: mods };

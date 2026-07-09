@@ -26,7 +26,24 @@ const isBurnedOut = storeManager.GetRWStore<boolean>(actor, "attributes.isBurned
 
 let magicItem = $state<Item | null>(null);
 
-const isAwakened = $derived($magic > 0 && magicItem !== null && !$isBurnedOut);
+function getActorItems(): Item[] {
+   const items = (actor as any)?.items;
+   if (!items) return [];
+   if (Array.isArray(items)) return items as Item[];
+   const contents = (items as any)?.contents;
+   if (Array.isArray(contents)) return contents as Item[];
+   if (typeof (items as any)?.values === "function") {
+      return Array.from((items as any).values() as Iterable<Item>);
+   }
+   return [];
+}
+
+function rebuildMagicItem(): void {
+   magicItem = getActorItems().find((item: Item) => item.type === "magic") ?? null;
+}
+
+const hasMagicItem = $derived(magicItem !== null || getActorItems().some((item: Item) => item.type === "magic"));
+const isAwakened = $derived(($magic > 0 || $hasMagicItem) && !$isBurnedOut);
 
 onDestroy(() => {
    Hooks.off("createItem", createHookId);
@@ -34,10 +51,6 @@ onDestroy(() => {
    Hooks.off("deleteItem", deleteHookId);
    storeManager.Unsubscribe(actor);
 });
-
-function rebuildMagicItem(): void {
-   magicItem = [...((actor as any).items ?? [])].find((item: Item) => item.type === "magic") ?? null;
-}
 
 function belongsToActor(item: any): boolean {
    const actorId = (actor as any).id;
