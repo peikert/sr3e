@@ -39,6 +39,10 @@ export function dossierTabForItem(item: Item): DossierTab | null {
 	return null;
 }
 
+export function canShowGrimoireTab(magicValue: number, isBurnedOut: boolean): boolean {
+	return magicValue > 0 && !isBurnedOut;
+}
+
 export async function persistDossierTab(actor: Actor, tab: DossierTab): Promise<void> {
 	await actor.update({ [`flags.sr3e.${DOSSIER_TAB_FLAG}`]: tab }, { render: false });
 }

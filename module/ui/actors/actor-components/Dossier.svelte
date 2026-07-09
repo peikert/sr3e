@@ -14,7 +14,7 @@ import Grimoire from "./Grimoire.svelte";
 import Augmentations from "./Augmentations.svelte";
 import ActiveEffectsViewer from "../../common-components/ActiveEffectsViewer.svelte";
 import RatsRace from "./rats-race/RatsRace.svelte";
-import { DOSSIER_TAB_FLAG, type DossierTab, isDossierTab, dossierTabForItem } from "./dossierTabs";
+import { DOSSIER_TAB_FLAG, type DossierTab, isDossierTab, dossierTabForItem, canShowGrimoireTab } from "./dossierTabs";
 
 let { actor: _actor }: { actor: Actor } = $props();
 const actor = untrack(() => _actor);
@@ -74,6 +74,7 @@ const onItemCreate = (item: Item) => {
    onItemChange(item);
    if (!belongsToActor(item)) return;
    const tab = dossierTabForItem(item);
+   if (tab === "grimoire" && !canShowGrimoireTab($magic, $isBurnedOut)) return;
    if (tab) $activeTabStore = tab;
 };
 
@@ -91,11 +92,7 @@ function bySkillType(skillType: string) {
 const activeSkills = $derived(bySkillType("active"));
 const knowledgeSkills = $derived(bySkillType("knowledge"));
 const languageSkills = $derived(bySkillType("language"));
-const isAwakened = $derived(
-   $magic > 0 &&
-   magicItems.length > 0 &&
-   !$isBurnedOut,
-);
+const isAwakened = $derived(canShowGrimoireTab($magic, $isBurnedOut));
 const hasCyberdeck = $derived(cyberdeckItems.length > 0);
 const hasMatrixTab = $derived(hasCyberdeck || matrixProgramItems.length > 0);
 const hasAugmentationsTab = $derived(augmentationItems.length > 0);
