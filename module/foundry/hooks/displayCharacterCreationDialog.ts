@@ -88,6 +88,12 @@ export function preCreateCharacterActor(
 		return true;
 	}
 
+	const creationOptions = options as Record<string, unknown>;
+	if (creationOptions.pack || creationOptions.fromCompendium || creationOptions.fromCompendiumPack) {
+		console.log("SR3E | Allowing compendium-driven character creation");
+		return true;
+	}
+
 	// Check if this is a programmatic creation (has our marker)
 	if ((options as any).__sr3eAllowCreation) {
 		console.log("SR3E | Allowing programmatic character creation");
