@@ -79,14 +79,14 @@ let targetCount = $state(typeof game !== "undefined" ? ((game.user as any)?.targ
 let hasAmmo = $state(true);
 
 const isRollEnabled = $derived(
-    (item.type === "weapon" && targetCount === 1 && !!$linkedSkillIdStore && hasAmmo) ||
+    (item.type === "weapon" && !!$linkedSkillIdStore && hasAmmo) ||
     canCastSpell ||
     isActiveAdeptPower
 );
 const rollDisabledReason = $derived(
     item.type === "weapon" && !$linkedSkillIdStore ? "No skill selected" :
     item.type === "weapon" && !hasAmmo ? "No ammo loaded" :
-    item.type === "weapon" && targetCount !== 1 ? "Select exactly one target" :
+    item.type === "weapon" && targetCount !== 1 ? "No target selected — continue anyway?" :
     item.type === "spell" && !canCastSpell ? "Ready fetish required" :
     ""
 );
@@ -131,7 +131,7 @@ async function onTrashClick() {
     await (actor as any).deleteEmbeddedDocuments("Item", [(item as any).id]);
 }
 
-function onRollClick() {
+async function onRollClick() {
     if (!isRollEnabled) return;
     if (isSpell) {
         openComposer(buildSpellcastingSetup(actor as never, item as never), actor);
@@ -140,6 +140,15 @@ function onRollClick() {
     if (isActiveAdeptPower) {
         openComposer(buildAttributeSetup(actor as never, "magic", $nameStore), actor);
         return;
+    }
+    if (item.type === "weapon" && targetCount !== 1) {
+        const confirmed = await (foundry.applications.api.DialogV2 as any).confirm({
+            window: { title: "Continue attack?" },
+            content: "<p>No valid target is selected. Continue anyway?</p>",
+            yes: { label: "Continue" },
+            defaultYes: false,
+        });
+        if (!confirmed) return;
     }
     const setup = buildWeaponAttack(actor as never, item as never);
     openComposer(setup, actor);

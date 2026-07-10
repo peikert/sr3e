@@ -149,6 +149,22 @@ describe("handleDefenderChoice", () => {
         expect(openFn.mock.calls[0][0].kind).toBe("dodge");
     });
 
+    it("submits an immediate dodge response on 'apply'", async () => {
+        (globalThis as Record<string, unknown>).game = {
+            actors: { get: (id: string) => id === "def1" ? actor() : undefined },
+            user: { id: "gm1", isGM: true },
+            users: new Map([["gm1", { id: "gm1", isGM: true, active: true }]]),
+        };
+        (globalThis as Record<string, unknown>).ChatMessage = { create: vi.fn().mockResolvedValue(undefined) };
+
+        await handleContestStub(makeStub("dodge"));
+        const response = waitForResponse("c1");
+        handleDefenderChoice("c1", "apply");
+        const result = await response;
+        expect(result.meta.procedureKind).toBe("dodge");
+        expect(result.options.targetNumber).toBe(4);
+    });
+
     it("opens composer with melee-defense setup on 'standard'", async () => {
         const openFn = vi.fn();
         const { registerComposer } = await import("../procedures/composerService");

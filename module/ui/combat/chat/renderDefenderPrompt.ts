@@ -21,6 +21,7 @@ export function renderDefenderPrompt(
   <button class="sr3e-responder-button sr3e-responder-decline" data-responder="no"><span>Cancel</span></button>`;
     } else if (isDodge) {
         buttons = `<button class="sr3e-responder-button" data-responder="dodge"><span>Dodge</span></button>
+  <button class="sr3e-responder-button" data-responder="apply"><span>Apply</span></button>
   <button class="sr3e-responder-button sr3e-responder-decline" data-responder="no"><span>Cancel</span></button>`;
     } else if (isSpellResistance) {
         buttons = `<button class="sr3e-responder-button" data-responder="spell-resistance"><span>Resist Spell</span></button>

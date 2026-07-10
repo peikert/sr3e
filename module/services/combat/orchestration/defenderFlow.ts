@@ -189,6 +189,19 @@ export function handleDefenderChoice(contestId: string, key: string | null | und
         return;
     }
 
+    if (key === "apply") {
+        const rounds = record.exportCtx?.plan?.roundsFired ?? 1;
+        const tnMod = Math.floor(rounds / 3);
+        const targetNumber = 4 + tnMod;
+        submitContestResponse(contestId, {
+            terms: [],
+            options: { targetNumber },
+            meta: { flavor: "Dodge", procedureKind: "dodge" },
+        } as RollSnapshot);
+        ensureSheetOpen(defender);
+        return;
+    }
+
     if (key === "spell-resistance") {
         openComposer(buildSpellResistanceSetup(defender, contestId) as never, defender);
         ensureSheetOpen(defender);
