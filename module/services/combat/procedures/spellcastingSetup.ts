@@ -3,6 +3,7 @@ import { applySustainedSpellEffect, computeEffectChatTag } from "../../spells/sp
 import { addSustainedSpell, sustainingTnPenalty } from "../../spells/sustainedSpells";
 import type { Modifier } from "../modifierList";
 import type { PoolOption, ProcedureSetup } from "./simpleSetups";
+import { resolveLinkedSkill } from "./resolveLinkedSkill";
 
 type ActorLike = {
     id?: string;
@@ -23,7 +24,7 @@ type ItemLike = {
 const SORCERY = "sorcery";
 
 export function buildSpellcastingSetup(actor: ActorLike, spell: ItemLike): ProcedureSetup {
-    const sorcery = findSorcerySkill(actor);
+    const castingSkill = resolveCastingSkill(actor, spell);
     const learnedForce = learnedForceMax(spell.system?.learnedForce);
     const target = spellTarget(spell);
     const focusOptions = eligibleFocusOptions(actor, spell);
@@ -66,7 +67,7 @@ export function buildSpellcastingSetup(actor: ActorLike, spell: ItemLike): Proce
     return {
         kind: "spellcasting",
         title: `Cast ${spell.name ?? "Spell"}`,
-        rollState: { dice: sorcery?.dice ?? 0, poolDice: 0, karmaDice: 0, targetNumber: target.targetNumber, modifiers },
+        rollState: { dice: castingSkill?.dice ?? 0, poolDice: 0, karmaDice: 0, targetNumber: target.targetNumber, modifiers },
         lockPriority: "advanced",
         selfPublish: true,
         initialPoolKey: "spell",
@@ -134,6 +135,16 @@ function casterMagic(actor: ActorLike): number {
 function learnedForceMax(value: unknown): number {
     const learned = Math.floor(Number(value ?? 0));
     return Math.max(1, learned);
+}
+
+function resolveCastingSkill(actor: ActorLike, spell: ItemLike): { id: string; dice: number } | null {
+    const linkedSkillId = String(spell.system?.linkedSkillId ?? "").trim();
+    if (linkedSkillId) {
+        const resolved = resolveLinkedSkill(actor as never, linkedSkillId);
+        if (resolved) return { id: resolved.skillId, dice: resolved.dice };
+    }
+
+    return findSorcerySkill(actor);
 }
 
 function findSorcerySkill(actor: ActorLike): { id: string; dice: number } | null {

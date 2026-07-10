@@ -20,6 +20,11 @@ export default class SpellModel extends foundry.abstract.TypeDataModel<SpellSche
         required: true,
         initial: "",
       }),
+      linkedSkillId: new StringField({
+        required: true,
+        initial: "",
+        blank: true,
+      }),
       manipulationSubtype: new StringField({
         required: true,
         initial: "",
@@ -115,6 +120,7 @@ export default class SpellModel extends foundry.abstract.TypeDataModel<SpellSche
 type SpellSchema = {
   type: StringField;
   category: StringField;
+  linkedSkillId: StringField;
   manipulationSubtype: StringField;
   range: StringField;
   duration: SchemaField<{

@@ -1,12 +1,7 @@
 @layer sr3e {
    $font-path: "/systems/sr3e/fonts";
 
-   /* Import Google Fonts as primary source */
-   @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
-   @import url('https://fonts.googleapis.com/css2?family=Neonderthaw&display=swap');
-
-
-   /* Local fonts as fallback */
+   /* Prefer the bundled local fonts for crisp, deterministic rendering inside Foundry */
    @font-face {
       font-family: "VT323-Local";
       src: url("#{$font-path}/VT323/VT323-Regular.ttf") format("truetype");
@@ -25,15 +20,26 @@
 
    :root {
       font-family: "VT323", "VT323-Local", monospace;
+      -webkit-font-smoothing: none;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: geometricPrecision;
+      font-synthesis: none;
    }
 
    // Mixins for VT323 font styling
    @mixin VTT323 {
       font-family: "VT323", "VT323-Local", monospace;
+      font-weight: 400;
+      font-style: normal;
+      font-variant-ligatures: none;
+      font-kerning: none;
       margin: 0.33rem 0;
       line-height: 1rem;
       color: var(--h1-color);
       font-size: 0.9rem;
+      -webkit-font-smoothing: none;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: geometricPrecision;
    }
 
    @mixin VTT323-header {

@@ -65,6 +65,12 @@ describe("buildSpellcastingSetup", () => {
         expect(setup.initialPoolKey).toBe("spell");
     });
 
+    it("uses the selected casting skill when the spell has one", () => {
+        const spellcasting = { id: "s1", name: "Spellcasting", type: "skill", system: { skillType: "active", activeSkill: { value: 4 } } };
+        const setup = buildSpellcastingSetup(actor([sorcery, spellcasting]), spell({ linkedSkillId: "s1" }));
+        expect(setup.rollState.dice).toBe(4);
+    });
+
     it("adds a force control bounded by learned force", () => {
         const setup = buildSpellcastingSetup(actor([sorcery]), spell({ learnedForce: 5 }));
         expect(setup.forceControl).toEqual({ value: 5, min: 1, max: 5 });

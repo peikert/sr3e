@@ -1,5 +1,5 @@
 <script lang="ts">
-import { untrack } from "svelte";
+import { onDestroy, onMount, untrack } from "svelte";
 import { localize } from "../../services/utilities";
 import Image from "../common-components/Image.svelte";
 import GadgetViewer from "../common-components/GadgetViewer.svelte";
@@ -21,6 +21,7 @@ let durationType = $state(system.duration?.type as string);
 let manipulationSubtype = $state(system.manipulationSubtype as string);
 let targetingKind = $state(system.targeting?.kind as string);
 let thresholdMode = $state(system.threshold?.mode as string);
+let skillOptions = $state<{ value: string; label: string }[]>([]);
 
 const effectTargetPathOptions = gadgetTargetProperties("medical").map(prop => ({ value: prop.value, label: prop.label }));
 
@@ -35,6 +36,34 @@ function kvOptions(map: Record<string, string>) {
     return Object.entries(map).map(([value, token]) => ({ value, label: localize(token) }));
 }
 
+function buildSkillOptions() {
+    const parent = (item as any).parent;
+    if (!parent) return;
+
+    const result: { value: string; label: string }[] = [];
+    const skills = (parent.items as any[]).filter((i: any) => i.type === "skill");
+
+    for (const skill of skills) {
+        const baseLabel = skill.name as string;
+        result.push({ value: skill.id, label: baseLabel });
+
+        const sys = skill.system as Record<string, any>;
+        let specializations: { name: string }[] = [];
+
+        switch (sys.skillType) {
+            case "active":    specializations = sys.activeSkill?.specializations ?? [];    break;
+            case "knowledge": specializations = sys.knowledgeSkill?.specializations ?? []; break;
+            case "language":  specializations = sys.languageSkill?.specializations ?? [];  break;
+        }
+
+        specializations.forEach((spec, i) => {
+            result.push({ value: `${skill.id}::${i}`, label: `${baseLabel} — ${spec.name}` });
+        });
+    }
+
+    skillOptions = result;
+}
+
 function onCategoryChange(val: string) {
     category = val;
     (item as any).update({ "system.category": val }, { render: false });
@@ -43,6 +72,25 @@ function onCategoryChange(val: string) {
 function updateSystem(path: string, val: string | number | boolean) {
     (item as any).update({ [path]: val }, { render: false });
 }
+
+onMount(() => {
+    buildSkillOptions();
+    const collection = (item as any).parent?.items.collection;
+    if (collection) {
+        collection.on("update", buildSkillOptions);
+        collection.on("create", buildSkillOptions);
+        collection.on("delete", buildSkillOptions);
+    }
+});
+
+onDestroy(() => {
+    const collection = (item as any).parent?.items.collection;
+    if (collection) {
+        collection.off("update", buildSkillOptions);
+        collection.off("create", buildSkillOptions);
+        collection.off("delete", buildSkillOptions);
+    }
+});
 
 function onManipulationSubtypeChange(val: string) {
     manipulationSubtype = val;
@@ -86,6 +134,9 @@ function onManipulationSubtypeChange(val: string) {
 
     <ItemSheetComponent title={localize(CONFIG.SR3E.SPELL.casting)}>
         <LabeledNumberInput {item} key="learnedForce" label={localize(CONFIG.SR3E.SPELL.learnedForce)} value={system.learnedForce ?? 0} path="system" />
+        {#if (item as any).parent}
+            <LabeledDropdown {item} key="linkedSkillId" label={localize(CONFIG.SR3E.SPELL.linkedSkill)} value={system.linkedSkillId ?? ""} path="system" options={skillOptions} disabled={!skillOptions.length} />
+        {/if}
         <LabeledDropdown {item} key="range" label={localize(CONFIG.SR3E.SPELL.range)} value={system.range ?? ""} path="system" options={kvOptions(CONFIG.SR3E.SPELL_RANGES)} />
         <LabeledDropdown {item} key="type" label={localize(CONFIG.SR3E.SPELL.duration)} value={durationType ?? ""} options={kvOptions(CONFIG.SR3E.SPELL_DURATIONS)} onUpdate={(val) => { durationType = val; updateSystem("system.duration.type", val); }} />
         <LabeledNumberInput {item} key="rounds" label={localize(CONFIG.SR3E.SPELL.rounds)} value={system.duration?.rounds ?? 0} path="system.duration" disabled={durationType !== "sustained"} />

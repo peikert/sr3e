@@ -7,7 +7,7 @@ export const MAGIC_KEYS = [
 export const SPELL_KEYS = [
   "spell", "casting", "targetingRules", "elementalRules",
   "thresholdRules", "drain", "effectRules",
-  "type", "category", "manipulationSubtype", "duration", "rounds",
+  "type", "category", "linkedSkill", "manipulationSubtype", "duration", "rounds",
   "learnedForce", "range", "targeting", "targetAttribute", "staticTargetNumber",
   "resistanceAttribute", "thresholdMode", "thresholdAttribute", "thresholdDivisor",
   "thresholdValue", "attackTargetNumber", "canDodge", "armorMultiplier",
