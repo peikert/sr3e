@@ -44,4 +44,34 @@ describe("preCreateCharacterActor", () => {
         expect(shouldIntercept).toBe(true);
         expect(setTimeoutSpy).not.toHaveBeenCalled();
     });
+
+    it("allows character creation when data.sourceId is set", async () => {
+        const setTimeoutSpy = vi.spyOn(globalThis, "setTimeout");
+        const { preCreateCharacterActor } = await import("./displayCharacterCreationDialog");
+
+        const shouldIntercept = preCreateCharacterActor(
+            {} as any,
+            { type: "character", sourceId: "Compendium.myPack.abc123" },
+            {},
+            "user-1",
+        );
+
+        expect(shouldIntercept).toBe(true);
+        expect(setTimeoutSpy).not.toHaveBeenCalled();
+    });
+
+    it("allows character creation when data.flags.core.sourceId is set", async () => {
+        const setTimeoutSpy = vi.spyOn(globalThis, "setTimeout");
+        const { preCreateCharacterActor } = await import("./displayCharacterCreationDialog");
+
+        const shouldIntercept = preCreateCharacterActor(
+            {} as any,
+            { type: "character", flags: { core: { sourceId: "Compendium.myPack.abc123" } } },
+            {},
+            "user-1",
+        );
+
+        expect(shouldIntercept).toBe(true);
+        expect(setTimeoutSpy).not.toHaveBeenCalled();
+    });
 });

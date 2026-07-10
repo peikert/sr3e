@@ -88,9 +88,17 @@ export function preCreateCharacterActor(
 		return true;
 	}
 
-	const creationOptions = options as Record<string, unknown>;
-	if (creationOptions.pack || creationOptions.fromCompendium || creationOptions.fromCompendiumPack) {
-		console.log("SR3E | Allowing compendium-driven character creation");
+	const creationOptions = ((options as Record<string, unknown>) ?? {}) as Record<string, unknown>;
+	const packOption = creationOptions.pack;
+	const isCompendiumCreation = (
+		typeof packOption === "string" && packOption.length > 0
+	) || creationOptions.fromCompendium === true
+	|| creationOptions.fromCompendiumPack === true
+	|| typeof (data as any)?.sourceId === "string"
+	|| typeof (data as any)?.flags?.core?.sourceId === "string"
+	|| typeof (data as any)?.flags?.core?.pack === "string";
+	if (isCompendiumCreation) {
+		console.log("SR3E | Allowing compendium-driven character creation", { options: creationOptions, data });
 		return true;
 	}
 
